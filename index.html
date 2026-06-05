@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Call Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary: #eeede9;
+      --text-primary: #1a1a18;
+      --text-secondary: #6b6b67;
+      --text-tertiary: #9b9b96;
+      --border-light: rgba(0,0,0,0.1);
+      --border-mid: rgba(0,0,0,0.18);
+      --border-strong: rgba(0,0,0,0.28);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* ── Top nav ── */
+    .nav {
+      background: var(--bg-primary);
+      border-bottom: 0.5px solid var(--border-light);
+      padding: 0 2rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-brand { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .nav-brand i { font-size: 18px; color: var(--text-secondary); }
+    .nav-right { font-size: 13px; color: var(--text-tertiary); }
+
+    /* ── Page layout ── */
+    .page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px;
+    }
+    .page-title { font-size: 20px; font-weight: 500; }
+    .page-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.875rem 1rem;
+    }
+    .stat-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 500; }
+
+    /* ── Controls ── */
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 1.25rem; }
+    .controls input[type=text],
+    .controls select {
+      height: 36px; font-size: 13px; font-family: var(--font);
+      border-radius: var(--radius-md); border: 0.5px solid var(--border-mid);
+      background: var(--bg-primary); color: var(--text-primary);
+      padding: 0 10px; flex: 1; min-width: 120px; outline: none;
+    }
+    .controls input[type=text]:focus,
+    .controls select:focus { border-color: var(--border-strong); }
+
+    /* ── Buttons ── */
+    .btn-add {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0 16px; height: 36px; font-size: 13px; font-weight: 500;
+      font-family: var(--font);
+      background: var(--text-primary); color: var(--bg-primary);
+      border: none; border-radius: var(--radius-md); cursor: pointer;
+      white-space: nowrap; transition: opacity .15s;
+    }
+    .btn-add:hover { opacity: 0.85; }
+
+    /* ── Call cards ── */
+    .call-list { display: flex; flex-direction: column; gap: 8px; }
+    .call-card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: start; gap: 12px;
+      transition: border-color .15s;
+    }
+    .call-card:hover { border-color: var(--border-mid); }
+    .call-card.pri-critical { border-left: 3px solid #E24B4A; border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+    .call-card.pri-high     { border-left: 3px solid #BA7517; border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+    .call-card.pri-medium   { border-left: 3px solid #378ADD; border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+    .call-card.pri-low      { border-left: 3px solid #639922; border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+
+    .call-title { font-size: 15px; font-weight: 500; }
+    .call-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .call-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+
+    .badge {
+      font-size: 11px; padding: 2px 9px; border-radius: 6px;
+      font-weight: 500; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .badge-open      { background: #E6F1FB; color: #0C447C; }
+    .badge-pending   { background: #FAEEDA; color: #633806; }
+    .badge-resolved  { background: #EAF3DE; color: #27500A; }
+    .badge-escalated { background: #FCEBEB; color: #791F1F; }
+    .badge-critical  { background: #FCEBEB; color: #791F1F; }
+    .badge-high      { background: #FAEEDA; color: #633806; }
+    .badge-medium    { background: #E6F1FB; color: #0C447C; }
+    .badge-low       { background: #EAF3DE; color: #27500A; }
+
+    .agent-pill { font-size: 12px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 5px; }
+    .avatar {
+      width: 20px; height: 20px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 500; flex-shrink: 0;
+    }
+    .phone-tag { font-size: 12px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px; }
+    .ts { font-size: 12px; color: var(--text-tertiary); display: inline-flex; align-items: center; gap: 3px; }
+    .call-issue { font-size: 14px; color: var(--text-primary); margin-top: 6px; }
+    .call-notes { font-size: 13px; color: var(--text-secondary); margin-top: 3px; line-height: 1.5; }
+
+    .call-actions { display: flex; gap: 4px; align-items: center; }
+    .icon-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-tertiary); padding: 5px; border-radius: 6px;
+      display: flex; align-items: center; font-size: 16px;
+      transition: background .12s, color .12s;
+    }
+    .icon-btn:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+    .empty { text-align: center; padding: 3rem 1rem; color: var(--text-tertiary); font-size: 14px; }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem; width: 480px; max-width: 95vw;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    .modal h3 { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-group input[type=text],
+    .form-group input[type=tel],
+    .form-group select,
+    .form-group textarea {
+      width: 100%; font-size: 14px; font-family: var(--font);
+      padding: 8px 10px; border-radius: var(--radius-md);
+      border: 0.5px solid var(--border-mid);
+      background: var(--bg-primary); color: var(--text-primary); outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--border-strong); }
+    .form-group textarea { height: 70px; resize: vertical; line-height: 1.5; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-trio { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+    .btn-cancel {
+      padding: 0 16px; height: 34px; font-size: 13px; font-family: var(--font);
+      background: none; border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md); color: var(--text-secondary); cursor: pointer;
+    }
+    .btn-cancel:hover { background: var(--bg-secondary); }
+    .btn-save {
+      padding: 0 16px; height: 34px; font-size: 13px; font-weight: 500; font-family: var(--font);
+      background: var(--text-primary); color: var(--bg-primary);
+      border: none; border-radius: var(--radius-md); cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-save:hover { opacity: 0.85; }
+
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .form-row, .form-trio { grid-template-columns: 1fr; }
+      .nav { padding: 0 1rem; }
+      .page { padding: 1.25rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <i class="ti ti-headset" aria-hidden="true"></i>
+    Support Call Tracker
+  </div>
+  <div class="nav-right" id="nav-date"></div>
+</nav>
+
+<main class="page">
+  <div class="header-row">
+    <div>
+      <div class="page-title">Support calls</div>
+      <div class="page-sub">Track and manage product support activity</div>
+    </div>
+    <button class="btn-add" onclick="openModal()">
+      <i class="ti ti-plus" aria-hidden="true"></i> Log call
+    </button>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Total</div>
+      <div class="stat-value" id="s-total">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Open</div>
+      <div class="stat-value" id="s-open" style="color:#185FA5">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value" id="s-pending" style="color:#854F0B">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Resolved</div>
+      <div class="stat-value" id="s-resolved" style="color:#3B6D11">0</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="Search calls…" oninput="render()">
+    <select id="filter-status" onchange="render()">
+      <option value="">All statuses</option>
+      <option>Open</option><option>Pending</option><option>Resolved</option><option>Escalated</option>
+    </select>
+    <select id="filter-priority" onchange="render()">
+      <option value="">All priorities</option>
+      <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+    </select>
+    <select id="filter-agent" onchange="render()">
+      <option value="">All agents</option>
+      <option>Jeremy Ciske</option><option>Benjamin Knight</option>
+      <option>Preston Jackson</option><option>Steven Slaugh</option><option>Jared Diamond</option>
+    </select>
+  </div>
+
+  <div class="call-list" id="call-list"></div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <h3 id="modal-title">Log new call</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Customer / company</label>
+        <input type="text" id="f-customer" placeholder="e.g. Acme Corp">
+      </div>
+      <div class="form-group">
+        <label>Phone number</label>
+        <input type="tel" id="f-phone" placeholder="e.g. (801) 555-0123">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Issue summary</label>
+      <input type="text" id="f-issue" placeholder="Brief description of the issue">
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="f-notes" placeholder="Optional details…"></textarea>
+    </div>
+    <div class="form-trio">
+      <div class="form-group">
+        <label>Agent</label>
+        <select id="f-agent">
+          <option value="">Unassigned</option>
+          <option>Jeremy Ciske</option><option>Benjamin Knight</option>
+          <option>Preston Jackson</option><option>Steven Slaugh</option><option>Jared Diamond</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="f-status">
+          <option>Open</option><option>Pending</option><option>Resolved</option><option>Escalated</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="f-priority">
+          <option>Medium</option><option>Low</option><option>High</option><option>Critical</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCall()">Save call</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── CONFIGURATION ─────────────────────────────────────────
+  // After deploying the Apps Script, paste your web app URL here:
+  const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+  // ─────────────────────────────────────────────────────────
+
+  const AGENTS = ['Jeremy Ciske','Benjamin Knight','Preston Jackson','Steven Slaugh','Jared Diamond'];
+  const ABGS   = ['#B5D4F4','#9FE1CB','#F5C4B3','#FAC775','#F4C0D1'];
+  const ATXT   = ['#0C447C','#085041','#712B13','#633806','#72243E'];
+  const PRI_ORDER = {Critical:0,High:1,Medium:2,Low:3};
+
+  let calls = [];
+  let editingId = null;
+  let loading = false;
+
+  document.getElementById('nav-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+  // ── Helpers ───────────────────────────────────────────────
+  function initials(n){ return n ? n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase() : '?'; }
+  function agentBg(n){ const i=AGENTS.indexOf(n); return i>=0?ABGS[i]:'#eee'; }
+  function agentTxt(n){ const i=AGENTS.indexOf(n); return i>=0?ATXT[i]:'#666'; }
+  function fmtDate(ts){
+    const d = new Date(parseInt(ts));
+    if(isNaN(d)) return '';
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  }
+  function badgeStatus(s){ return {Open:'badge-open',Pending:'badge-pending',Resolved:'badge-resolved',Escalated:'badge-escalated'}[s]||''; }
+  function badgePri(p){ return {Critical:'badge-critical',High:'badge-high',Medium:'badge-medium',Low:'badge-low'}[p]||''; }
+  function priClass(p){ return {Critical:'pri-critical',High:'pri-high',Medium:'pri-medium',Low:'pri-low'}[p]||''; }
+  function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+  function setLoading(on){
+    loading = on;
+    document.getElementById('call-list').style.opacity = on ? '0.4' : '1';
+  }
+
+  function showError(msg){
+    document.getElementById('call-list').innerHTML =
+      `<div class="empty"><i class="ti ti-alert-circle" style="font-size:32px;display:block;margin:0 auto 10px;color:#E24B4A"></i>${msg}</div>`;
+  }
+
+  // ── Google Sheets API (GET-only for iOS Safari compatibility) ──
+  async function api(params){
+    const url = SCRIPT_URL + '?' + Object.entries(params)
+      .map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
+      .join('&');
+    const res = await fetch(url);
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.error || 'API error');
+    return json;
+  }
+
+  async function apiGet(){
+    const json = await api({ action: 'getAll' });
+    return json.calls;
+  }
+
+  async function apiAdd(call){
+    await api({ action: 'add', call: JSON.stringify(call) });
+  }
+
+  async function apiUpdate(call){
+    await api({ action: 'update', call: JSON.stringify(call) });
+  }
+
+  async function apiDelete(id){
+    await api({ action: 'delete', id });
+  }
+
+  async function loadCalls(){
+    if(SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE'){
+      showError('Paste your Apps Script URL into the SCRIPT_URL variable in the HTML file to connect to Google Sheets.');
+      return;
+    }
+    setLoading(true);
+    try {
+      calls = await apiGet();
+      updateStats();
+      render();
+    } catch(e){
+      showError('Could not load calls from Google Sheets. Check your SCRIPT_URL and try refreshing.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── Stats & Render ────────────────────────────────────────
+  function updateStats(){
+    document.getElementById('s-total').textContent = calls.length;
+    document.getElementById('s-open').textContent = calls.filter(c=>c.status==='Open').length;
+    document.getElementById('s-pending').textContent = calls.filter(c=>c.status==='Pending').length;
+    document.getElementById('s-resolved').textContent = calls.filter(c=>c.status==='Resolved').length;
+  }
+
+  function render(){
+    const q  = document.getElementById('search').value.toLowerCase();
+    const fs = document.getElementById('filter-status').value;
+    const fp = document.getElementById('filter-priority').value;
+    const fa = document.getElementById('filter-agent').value;
+    let filtered = calls.filter(c=>{
+      if(fs && c.status!==fs) return false;
+      if(fp && c.priority!==fp) return false;
+      if(fa && c.agent!==fa) return false;
+      if(q && !`${c.customer} ${c.issue} ${c.notes} ${c.agent} ${c.phone}`.toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a,b)=>{
+      const aRes = a.status==='Resolved'?1:0;
+      const bRes = b.status==='Resolved'?1:0;
+      if(aRes!==bRes) return aRes-bRes;
+      return (PRI_ORDER[a.priority]??2)-(PRI_ORDER[b.priority]??2)||(b.id-a.id);
+    });
+
+    const list = document.getElementById('call-list');
+    if(!filtered.length){
+      list.innerHTML=`<div class="empty"><i class="ti ti-phone-off" style="font-size:32px;display:block;margin:0 auto 10px"></i>No calls match your filters</div>`;
+      return;
+    }
+    list.innerHTML = filtered.map(c=>`
+      <div class="call-card ${priClass(c.priority)}">
+        <div>
+          <div class="call-header">
+            <span class="call-title">${esc(c.customer)||'—'}</span>
+            <span class="badge ${badgeStatus(c.status)}">${c.status}</span>
+            ${c.priority?`<span class="badge ${badgePri(c.priority)}">${c.priority}</span>`:''}
+          </div>
+          <div class="call-meta">
+            ${c.agent
+              ? `<span class="agent-pill"><span class="avatar" style="background:${agentBg(c.agent)};color:${agentTxt(c.agent)}">${initials(c.agent)}</span>${esc(c.agent)}</span>`
+              : '<span class="agent-pill" style="font-style:italic;color:#aaa">Unassigned</span>'}
+            ${c.phone?`<span class="phone-tag"><i class="ti ti-phone" style="font-size:12px"></i>${esc(c.phone)}</span>`:''}
+            <span class="ts"><i class="ti ti-clock" style="font-size:12px"></i>${fmtDate(c.id)}</span>
+          </div>
+          ${c.issue?`<div class="call-issue">${esc(c.issue)}</div>`:''}
+          ${c.notes?`<div class="call-notes">${esc(c.notes)}</div>`:''}
+        </div>
+        <div class="call-actions">
+          <button class="icon-btn" onclick="editCall('${c.id}')" aria-label="Edit call"><i class="ti ti-edit"></i></button>
+          <button class="icon-btn" onclick="deleteCall('${c.id}')" aria-label="Delete call"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Modal ─────────────────────────────────────────────────
+  function openModal(id){
+    editingId = id || null;
+    document.getElementById('modal-title').textContent = id ? 'Edit call' : 'Log new call';
+    if(id){
+      const c = calls.find(x=>x.id===id);
+      document.getElementById('f-customer').value = c.customer;
+      document.getElementById('f-phone').value = c.phone||'';
+      document.getElementById('f-issue').value = c.issue;
+      document.getElementById('f-notes').value = c.notes;
+      document.getElementById('f-agent').value = c.agent;
+      document.getElementById('f-status').value = c.status;
+      document.getElementById('f-priority').value = c.priority||'Medium';
+    } else {
+      ['f-customer','f-phone','f-issue','f-notes'].forEach(fid=>document.getElementById(fid).value='');
+      document.getElementById('f-agent').value='';
+      document.getElementById('f-status').value='Open';
+      document.getElementById('f-priority').value='Medium';
+    }
+    document.getElementById('modal').classList.add('open');
+    setTimeout(()=>document.getElementById('f-customer').focus(),50);
+  }
+
+  function closeModal(){ document.getElementById('modal').classList.remove('open'); editingId=null; }
+
+  async function saveCall(){
+    const customer = document.getElementById('f-customer').value.trim();
+    const issue    = document.getElementById('f-issue').value.trim();
+    if(!customer && !issue){ document.getElementById('f-customer').focus(); return; }
+    const callData = {
+      id:       editingId || String(Date.now()),
+      customer, issue,
+      phone:    document.getElementById('f-phone').value.trim(),
+      notes:    document.getElementById('f-notes').value.trim(),
+      agent:    document.getElementById('f-agent').value,
+      status:   document.getElementById('f-status').value,
+      priority: document.getElementById('f-priority').value,
+    };
+    const isEdit = editingId;
+    closeModal();
+    setLoading(true);
+    try {
+      if(isEdit){
+        await apiUpdate(callData);
+        const i = calls.findIndex(x=>x.id===isEdit);
+        calls[i] = callData;
+      } else {
+        await apiAdd(callData);
+        calls.push(callData);
+      }
+      updateStats();
+      render();
+    } catch(e){
+      alert('Could not save to Google Sheets. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function editCall(id){ openModal(id); }
+
+  async function deleteCall(id){
+    if(!confirm('Delete this call?')) return;
+    setLoading(true);
+    try {
+      await apiDelete(id);
+      calls = calls.filter(c=>c.id!==id);
+      updateStats();
+      render();
+    } catch(e){
+      alert('Could not delete from Google Sheets. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  document.getElementById('modal').addEventListener('click', e=>{
+    if(e.target===document.getElementById('modal')) closeModal();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+  // ── Boot ──────────────────────────────────────────────────
+  loadCalls();
+</script>
+</body>
+</html>
